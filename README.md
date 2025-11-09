@@ -4,7 +4,7 @@
 
 It combines a clean interface with modular Python architecture:
 - Fetch crypto price data using `yfinance`
-- Add indicators (SMA, EMA, RSI, Bollinger)
+- Add indicators (SMA, EMA, RSI)
 - Run strategy backtests with customizable parameters
 - Visualize equity curves and performance stats
 - Save, compare, and manage backtest results
