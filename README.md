@@ -53,7 +53,7 @@ AlphaCreator/
 
 ### Clone the repository
 ```bash
-git clone https://github.com/SimonGFleet/AlphaCreator.git
+git clone https://github.com/SimonGFleet/Alpha-Creator.git
 cd AlphaCreator
 ```
 
