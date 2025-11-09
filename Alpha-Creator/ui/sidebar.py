@@ -3,9 +3,7 @@ from core.data_loader import get_crypto_data
 from core.indicators import fetch_indicator
 from core.strategy_holder import SimpleMeanReversion, BasicMomentum, BasicRSI, Bollinger
 from utils.session import update_data
-from utils.results import clear_all_saved_runs
 from typing import Any
-
 
 
 interval_map = {
@@ -75,8 +73,7 @@ def select_indicator() -> None:
 
 
 def remove_indicator() -> None:
-    """
-    Displays sidebar controls for removing a given indicator,
+    """Displays sidebar controls for removing a given indicator,
     The indicator is removed from the session state and therefore it is removed from the plot, 
     however, the indicator remains as a column in df to avoid unnecessary recalculations
 
@@ -132,10 +129,3 @@ def choose_strategy() -> tuple[type | Any, dict[str, Any]]:
 def test_strategy_button() -> bool:
     """Return True when the 'Test Strategy' button is pressed."""
     return st.sidebar.button("Test Strategy")
-
-
-
-def permanently_delete():
-    st.sidebar.divider()
-    st.sidebar.subheader("Permanently Delete Stored Runs")
-    clear_all_saved_runs()

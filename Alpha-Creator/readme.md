@@ -53,8 +53,8 @@ AlphaCreator/
 
 ### Clone the repository
 ```bash
-git clone https://github.com/SimonGFleet/Alpha-Creator.git
-cd Alpha-Creator
+git clone https://github.com/SimonGFleet/AlphaCreator.git
+cd AlphaCreator
 ```
 
 ### (Optional) Create and activate a virtual environment
@@ -82,4 +82,4 @@ pip install -r requirements.txt
 ```bash
 streamlit run main.py
 ```
-
+# Crypto-AlphaCreator
