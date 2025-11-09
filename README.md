@@ -24,7 +24,7 @@ It combines a clean interface with modular Python architecture:
 ## 🗂️ Project Structure
 
 ```text
-AlphaCreator/
+Alpha-Creator/
 │
 ├── main.py                # Streamlit entry point
 │
