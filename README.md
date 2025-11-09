@@ -54,7 +54,7 @@ AlphaCreator/
 ### Clone the repository
 ```bash
 git clone https://github.com/SimonGFleet/Alpha-Creator.git
-cd AlphaCreator
+cd Alpha-Creator
 ```
 
 ### (Optional) Create and activate a virtual environment
