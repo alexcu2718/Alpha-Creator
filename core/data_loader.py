@@ -4,27 +4,52 @@ import streamlit as st
 
 
 @st.cache_data(show_spinner=False)
-def get_crypto_data(symbol: str="BTC-USD", period: str="365d", interval: str='1d') -> pd.DataFrame:
-    '''
-    Fetches cryptocurrency data and stores it in a pandas dataframe.
+def get_crypto_data(
+    symbol: str = "BTC-USD",
+    period: str = "365d",
+    interval: str = "1d",
+) -> pd.DataFrame:
+    """
+    Fetch market data (crypto or stock) using yfinance and return a clean DataFrame.
+
     Args:
-        symbol: string,the ticker to be used
-        period: string, number of days followed by d
-        interval: string, period of time between fetching of price
+        symbol: Ticker to fetch, e.g. "BTC-USD", "AAPL"
+        period: Lookback window, e.g. "30d", "180d", "365d"
+        interval: Bar size, e.g. "1d", "1h", "5m"
+
     Returns:
-        data: pandas DataFrame of historical price data, has a timestap and OHLCV'''
-    data = yf.download(
-        tickers=symbol,
-        interval=interval,
-        period=period,
-        auto_adjust=True
-    )
-    data.columns = data.columns.get_level_values(0)
+        pd.DataFrame with datetime index and OHLCV columns.
+        Returns an empty DataFrame (and shows a message) if download fails.
+    """
+    try:
+        data = yf.download(
+            tickers=symbol,
+            interval=interval,
+            period=period,
+            auto_adjust=True,
+            progress=False,
+        )
+    except Exception as e:
+        st.error(f"Failed to download data for {symbol}: {e}")
+        return pd.DataFrame()
+
+    # Handle no data / bad response
+    if data is None or data.empty:
+        st.warning(
+            f"No data returned for {symbol} with period={period}, interval={interval}. "
+            "Try a shorter period or coarser interval."
+        )
+        return pd.DataFrame()
+
+    # Flatten MultiIndex columns if present (yfinance sometimes does this)
+    if isinstance(data.columns, pd.MultiIndex):
+        data.columns = data.columns.get_level_values(0)
+
+    # Ensure datetime index without timezone (Streamlit friendly)
     data.index = pd.to_datetime(data.index)
+    if getattr(data.index, "tz", None) is not None:
+        data.index = data.index.tz_localize(None)
 
-    # Remove timezone info if exists (Streamlit hates tz-aware indexes)
-    data.index = data.index.tz_localize(None)
     return data
-
 
 

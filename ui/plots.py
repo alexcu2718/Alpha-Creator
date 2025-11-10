@@ -14,7 +14,7 @@ def choose_plot_columns(indicators: list[tuple[str, int]]) -> None:
         indicators (list[tuple[str, int]]):
             list of indicators, looks like (indicator_type, window_size)
     """
-    if st.session_state.df is None:
+    if st.session_state.df is None or st.session_state.df.empty:
         return 
     st.subheader("Price Graph")
     # Initialises two lists of column names to plot

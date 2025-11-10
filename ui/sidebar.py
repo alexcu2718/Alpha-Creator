@@ -21,7 +21,8 @@ period_map = {
 crypto_map = {
     "Bitcoin": "BTC-USD",
     "Ethereum": "ETH-USD",
-    "Solana": "SOL-USD"
+    "Solana": "SOL-USD",
+    "Apple": "AAPL"
 }
 
 strategy_classes = {
