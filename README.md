@@ -1,4 +1,4 @@
-# 💹 AlphaCreator – Streamlit Crypto Backtester
+# AlphaCreator – Streamlit Crypto Backtester
 
 **AlphaCreator** is an interactive **Streamlit web app** for building, testing, and visualizing cryptocurrency trading strategies.
 
@@ -8,23 +8,27 @@ It combines a clean interface with modular Python architecture:
 - Run strategy backtests with customizable parameters
 - Visualize equity curves and performance stats
 - Save, compare, and manage backtest results
+- Optimise strategies on a range of parameters
 
 ---
 
-## 🧠 Features
+## Features
 
-- 📈 **Multiple Strategies** – Mean Reversion, Momentum, RSI, Bollinger  
-- ⚙️ **Modular Design** – Easily add new strategies or indicators  
-- 💾 **Save & Compare Runs** – Track multiple backtests visually  
-- 🧮 **Performance Metrics** – Profit %, Sharpe ratio, Win rate, Drawdown  
-- 🖥️ **Clean UI** – Streamlit front-end with automatic caching  
+- **Multiple Strategies** – Mean Reversion, Momentum, RSI, Bollinger  
+- **Modular Design** – Easily add new strategies or indicators  
+- **Save & Compare Runs** – Track multiple backtests visually  
+- **Performance Metrics** – Profit %, Sharpe ratio, Win rate, Drawdown  
+- **Clean UI** – Streamlit front-end with automatic caching 
+- **Optimiser** - Tests a given strategy with random parameters 
+- **Results Analyser** - Choose parameters to look at how well results perform with given inputs
+
 
 ---
 
-## 🗂️ Project Structure
+## Project Structure
 
 ```text
-AlphaCreator/
+Alpha-Creator/
 │
 ├── main.py                # Streamlit entry point
 │
@@ -49,7 +53,7 @@ AlphaCreator/
 
 ---
 
-## ⚙️ Installation
+## Installation
 
 ### Clone the repository
 ```bash

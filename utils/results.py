@@ -1,8 +1,25 @@
 import streamlit as st
-from core.strategy_holder import Strategies
 import pandas as pd
 import os
 
+from core.strategy_holder import Strategies, strategy_classes
+
+def preliminary_save(data_location, equity_location):
+    if (
+        st.session_state.get("strategy") is not None
+        and getattr(st.session_state.strategy, "equity", None) is not None
+        and getattr(st.session_state.strategy, "stats", None) is not None
+        ):
+        strategy_obj: Strategies = st.session_state.strategy  # type: ignore
+        
+        # Save run_data - run_data is run name followed by statistics of run
+        run_data = strategy_obj.save(st.session_state.last_choice)
+        # Store run data to session state
+        data_location.append(run_data)
+
+        # Save equity curve as run_data : equity curve
+        run_id = len(data_location) - 1
+        equity_location[run_id] = strategy_obj.equity
 
 def results_management(strategy: Strategies | None) -> None:
     """
@@ -28,32 +45,20 @@ def results_management(strategy: Strategies | None) -> None:
         and getattr(st.session_state.strategy, "equity", None) is not None
         and getattr(st.session_state.strategy, "stats", None) is not None
         ):
-        strategy_obj: Strategies = st.session_state.strategy  # type: ignore
-        if st.button("Save Results"):
-            # Save run_data - run_data is run name followed by statistics of run
-            run_data = strategy_obj.save(st.session_state.last_choice)
-            # Store run data to session state
-            st.session_state.saved_runs.append(run_data)
+        st.sidebar.markdown("### Manage Saved Runs")
+        runs_to_delete = st.sidebar.multiselect("Select runs to delete", list(range(len(st.session_state.saved_runs))))
 
-            # Save equity curve as run_data : equity curve
-            run_id = len(st.session_state.saved_runs) - 1
-            st.session_state.saved_equities[run_id] = strategy_obj.equity
-            st.success("Saved Successfully!")
-        
-        st.markdown("### Manage Saved Runs")
-        runs_to_delete = st.multiselect("Select runs to delete", list(range(len(st.session_state.saved_runs))))
-
-        if st.button("Delete Selected Runs"):
+        if st.sidebar.button("Delete Selected Runs"):
             for run_id in sorted(runs_to_delete, reverse=True):
                 st.session_state.saved_runs.pop(run_id)
                 st.session_state.saved_equities.pop(run_id, None)
             st.success(f"Deleted {len(runs_to_delete)} run(s).")
             st.rerun()
 
-        if st.button("Save All to CSV"):
+        if st.sidebar.button("Save All to CSV"):
             save_all_results_to_csv()
 
-        if st.button("Load Saved Runs"):
+        if st.sidebar.button("Load Saved Runs"):
             load_all_results_from_csv()
             st.rerun()
 
@@ -122,6 +127,7 @@ def load_all_results_from_csv() -> None:
     # --- Load metadata ---
     df_runs = pd.read_csv(RUNS_FILE)
     st.session_state.saved_runs = df_runs.to_dict(orient="records")
+    load_saved_strategies()
 
     # --- Load equity curves ---
     if os.path.exists(EQUITIES_FILE):
@@ -133,3 +139,52 @@ def load_all_results_from_csv() -> None:
         }
 
     st.success(f"Loaded {len(st.session_state.saved_runs)} runs from disk.")
+    
+
+
+def load_saved_strategies():
+    st.session_state.strategies = []
+
+    for run in st.session_state.saved_runs:
+        cls_name = run.get("Strategy")
+        cls = strategy_classes.get(cls_name)
+        if not cls:
+            st.warning(f"Unknown strategy class: {cls_name}")
+            continue
+
+        # Extract parameter names back out
+        params = {k.replace("param_", ""): v for k, v in run.items() if k.startswith("param_")}
+
+        try:
+            strategy_obj = cls(params)
+            strategy_obj.stats = {k: v for k, v in run.items() if not k.startswith("param_") and k not in ["Strategy"]}
+            st.session_state.strategies.append(strategy_obj)
+        except Exception as e:
+            st.error(f"Failed to load strategy {cls_name}: {e}")
+
+
+def explode_indicator_strings(df):
+    """
+    Find any object column that looks like 'EMA, 12'
+    and split it into <col>_type and <col>_window.
+    """
+    df = df.copy()
+
+    for col in df.columns:
+        if df[col].dtype == object:
+            # Take a sample non-null value
+            sample = df[col].dropna().astype(str).iloc[0]
+            # Heuristic: contains a comma
+            if "," in sample:
+                parts = df[col].astype(str).str.split(",", n=1, expand=True)
+                df[f"{col}_type"] = parts[0].str.strip()
+                df[f"{col}_window"] = pd.to_numeric(parts[1].str.strip(), errors="coerce")
+
+    return df
+
+def get_results_df(Strategy, data_name):
+    data_key = "run_name_" + Strategy.name + data_name
+    if data_key not in st.session_state or not st.session_state[data_key]:
+        return None
+    
+    return pd.DataFrame(st.session_state[data_key])

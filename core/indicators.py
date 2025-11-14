@@ -1,5 +1,6 @@
 import numpy as np
 import pandas as pd
+import streamlit as st
 
 
 def SMA(data: pd.DataFrame, window: int) -> pd.DataFrame:
@@ -76,13 +77,54 @@ def fetch_indicator(data: pd.DataFrame, selector: tuple[str, int]) -> pd.DataFra
     Returns: 
         pandas dataframe with row added containing the new indicator
     '''
+    indicator_type, window = selector
+    colname = f"{indicator_type}_{window}"
+
+    # Dont do unnecessary calculations
+    if colname in data.columns:
+        return data
+    
     # Chooses function
-    funct_dict = {
+    indicator_dict = {
         "SMA": SMA,
         "EMA": EMA,
         "RSI": RSI
     }
     # Calls chosen function
-    data = funct_dict[selector[0]](data, selector[1])
+
+    data = indicator_dict[indicator_type](data, window)
     return data
 
+
+def add_all_indicators(param_config, params_range, data):
+    ''' 
+    The indicators step in integer values so 
+    we will always be doing less than a thousand this way'''
+
+    progress_text = st.empty()
+    for parameter, cfg in param_config.items():
+        # find the indicators to be added
+        if cfg["type"] == "indicator":
+            for indicator_type in cfg["allowed"]: # indicator type looks like 'EMA'
+                for i in range(params_range[parameter][0], params_range[parameter][1] + 1):
+                    data = fetch_indicator(data, (indicator_type, i)) 
+                    percentage = round(((i + 1 - params_range[parameter][0]) / (params_range[parameter][1] + 1- params_range[parameter][0])) * 100, 2)
+                    progress_text.write(f"Indicator Progress: {percentage}%")
+    progress_text = st.empty()
+    return data # set session state
+
+
+
+
+
+
+def add_indicators(StrategyClass, current_choice, data_name):
+    ''' 
+    If we want to change the data we only need to 
+    change the st.session_state.df variable 
+    make a section on this page to choose/ hold data'''
+    df = st.session_state[data_name]
+    for parameter, cfg in StrategyClass.param_config.items():
+        if cfg['type'] == 'indicator':
+            df = fetch_indicator(df, current_choice[parameter]) 
+    st.session_state[data_name] = df

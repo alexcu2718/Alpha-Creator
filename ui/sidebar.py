@@ -32,8 +32,14 @@ strategy_classes = {
     "Bollinger": Bollinger
 }
 
+def data_select_box(key):
+    crypto = st.selectbox("Select crypto", list(crypto_map.keys()), key="crypto" + key)
+    period = st.selectbox("Period", list(period_map.keys()), key="period" + key)
+    interval = st.selectbox("Granularity", list(interval_map.keys()), key="interval" + key)
+    return crypto_map[crypto], period_map[period], interval_map[interval]
 
-def select_data() -> None:
+
+def select_data(specific_location=False) -> None | str:
     """
     Displays sidebar controls for selecting the cryptocurrency, period, and data granularity,
     and loads new market data when the user clicks the 'Get Data' button.
@@ -43,15 +49,17 @@ def select_data() -> None:
     Returns:
         None
     """
-    crypto = st.sidebar.selectbox("Select crypto", list(crypto_map.keys()))
-    period = st.sidebar.selectbox("Period", list(period_map.keys()))
-    interval = st.sidebar.selectbox("Granularity", list(interval_map.keys()))
-    if st.sidebar.button("Get Data"):
-        update_data(crypto_map[crypto], period_map[period], interval_map[interval])
-    st.write(st.session_state.stock_details)
+    with st.sidebar.expander("Select Data"):
+        crypto, period, interval = data_select_box(key="main page selection")
+        
+        if st.sidebar.button("Get Data"):
+            data_name = update_data(crypto, period, interval, specific_location)
+            st.session_state["name"] = data_name
 
-    return None
-    
+    st.write(st.session_state.stock_details)
+        
+            
+
 
 def select_indicator() -> None:
     """
@@ -100,7 +108,7 @@ def remove_indicator() -> None:
     
 
 
-def choose_strategy() -> tuple[type | Any, dict[str, Any]]:
+def select_strategy() -> tuple[type | Any, dict[str, Any]]:
     """
     Displays sidebar controls for selecting a new strategy,
     When a strategy is selected it provides options for adding in the required indicators to test the strategy
@@ -117,7 +125,7 @@ def choose_strategy() -> tuple[type | Any, dict[str, Any]]:
         return StrategyClass, params
 
     StrategyClass = strategy_classes[strategy_type]
-    params = {}
+    
     for key, cfg in StrategyClass.param_config.items():
         if cfg["type"] == "indicator":
             if st.session_state.indicators:
@@ -133,6 +141,7 @@ def choose_strategy() -> tuple[type | Any, dict[str, Any]]:
 def test_strategy_button() -> bool:
     """Return True when the 'Test Strategy' button is pressed."""
     return st.sidebar.button("Test Strategy")
+
 
 
 

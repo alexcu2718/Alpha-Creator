@@ -8,7 +8,7 @@ def get_crypto_data(
     symbol: str = "BTC-USD",
     period: str = "365d",
     interval: str = "1d",
-) -> pd.DataFrame:
+    page='main') -> pd.DataFrame:
     """
     Fetch market data (crypto or stock) using yfinance and return a clean DataFrame.
 

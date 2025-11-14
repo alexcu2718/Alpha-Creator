@@ -4,6 +4,7 @@ from core.graphsandstats import get_stats
 from typing import Optional, Dict, Any, Callable
 import datetime
 
+
 class Strategies:
     '''
     Holds the shared functions for each strategy'''
@@ -15,7 +16,7 @@ class Strategies:
         self.signals: Optional[np.ndarray] = None
         self.stats: Optional[Dict[str, float]] = None
         self.equity: Optional[np.ndarray] = None
-        self.trade_fee: float = params.get("cost_per_trade", 1.5)
+        self.trade_fee: float = params.get("cost_per_trade", 0.5)
 
     def generate_signals(self, data: pd.DataFrame):
         '''Specific to chosen strategy'''
@@ -45,7 +46,7 @@ class Strategies:
             "Asset": asset,
             "Period": period,
             "Interval": interval,
-            "Strategy": self.name,
+            "Strategy": self.__class__.__name__,
             **formatted_stats,
             **formatted_params,
             "Timestamp": datetime.datetime.now().strftime("%Y-%m-%d %H:%M:%S") 
@@ -106,17 +107,14 @@ class SimpleMeanReversion(Strategies):
     name = "Simple Mean Reversion"
 
     param_config = {
-        "indicator": {"type": "indicator", "label": "Choose Indicator"},
-        "margin": {"type": "float", "label": "Choose Margin", "value": 0.05, "step": 0.01},
-        "cost_per_trade": {"type": "float", "label": "Cost Per Trade %", "value": 0.5, "step": 0.1},
+        "indicator": {"type": "indicator", "label": "Indicator", "allowed": ["SMA", "EMA"], "metric": "discrete"},
+        "margin": {"type": "float", "label": "Margin", "value": 0.05, "step": 0.01, "metric": "exponential"},
+        "cost_per_trade": {"type": "float", "label": "Cost Per Trade %", "value": 0.5, "step": 0.1, "metric": "none"},
     }
     
     def generate_signals(self, data: pd.DataFrame) -> np.ndarray:
         """
         Generate trading signals based on deviation from a moving average indicator.
-
-        The strategy compares the current price to a chosen indicator (e.g., SMA, EMA)
-        and produces buy/sell signals when the deviation exceeds a given margin.
 
         Args:
             df (pd.DataFrame): 
@@ -131,7 +129,7 @@ class SimpleMeanReversion(Strategies):
         indicator = self.params["indicator"]
         kind, length = indicator
         margin = self.params["margin"]
-        if (not indicator) or (not margin):
+        if (not indicator) or (margin is None):
             return np.array([])
         prices = data["Close"].to_numpy()
         average = data[f"{kind}_{length}"].to_numpy()
@@ -171,10 +169,10 @@ class BasicMomentum(Strategies):
     name = "Moving Average Crossover"
 
     param_config = {
-        "Short_MA": {"type": "indicator", "label": "Choose Short Indicator"},
-        "Long_MA": {"type": "indicator", "label": "Choose Long Indicator"},
-        "margin": {"type": "float", "label": "Choose Margin", "value": 0.05, "step": 0.01},
-        "cost_per_trade": {"type": "float", "label": "Cost Per Trade %", "value": 0.5, "step": 0.1},
+        "Short_MA": {"type": "indicator", "label": "Short Indicator", "allowed": ["SMA", "EMA"], "metric": "discrete"},
+        "Long_MA": {"type": "indicator", "label": "Long Indicator", "allowed": ["SMA", "EMA"], "metric": "discrete"},
+        "margin": {"type": "float", "label": "Margin", "value": 0.05, "step": 0.01, "metric": "exponential"},
+        "cost_per_trade": {"type": "float", "label": "Cost Per Trade %", "value": 0.5, "step": 0.1, "metric": "none"},
     }
 
     def generate_signals(self, data):
@@ -195,7 +193,7 @@ class BasicMomentum(Strategies):
         short = self.params["Short_MA"]
         long = self.params["Long_MA"] 
         margin = self.params["margin"]
-        if (not short) or (not long) or (not margin):
+        if (not short) or (not long) or (margin is None):
             return
         
         short_data = data[f"{short[0]}_{short[1]}"].to_numpy()
@@ -236,9 +234,9 @@ class BasicRSI(Strategies):
     name = "Basic RSI"
 
     param_config = {
-        "indicator": {"type": "indicator", "label": "Choose Indicator"},
-        "margin": {"type": "float", "label": "Choose Margin", "value": 0.25, "step": 0.01},
-        "cost_per_trade": {"type": "float", "label": "Cost Per Trade %", "value": 0.5, "step": 0.1},
+        "indicator": {"type": "indicator", "label": "Indicator", "allowed": ["RSI"],  "metric": "discrete"},
+        "margin": {"type": "float", "label": "Margin", "value": 0.25, "step": 0.01, "metric": "exponential"},
+        "cost_per_trade": {"type": "float", "label": "Cost Per Trade %", "value": 0.5, "step": 0.1, "metric": "none"},
     }
     
     def generate_signals(self, data):
@@ -295,10 +293,10 @@ class Bollinger(Strategies):
     """
     name = "Bollinger"
     param_config = {
-        "indicator": {"type": "indicator", "label": "Choose Indicator"},
-        "factor": {"type": "float", "label": "Choose Factor", "value": 0.5, "step": 0.1},
-        "margin": {"type": "float", "label": "Choose Margin", "value": 0.05, "step": 0.01},
-        "cost_per_trade": {"type": "float", "label": "Cost Per Trade %", "value": 0.5, "step": 0.1},
+        "indicator": {"type": "indicator", "label": "Indicator", "allowed": ["SMA", "EMA"], "metric": "discrete"},
+        "factor": {"type": "float", "label": "Factor", "value": 0.5, "step": 0.1, "metric": "exponential"},
+        "margin": {"type": "float", "label": "Margin", "value": 0.05, "step": 0.01, "metric": "exponential"},
+        "cost_per_trade": {"type": "float", "label": "Cost Per Trade %", "value": 0.5, "step": 0.1, "metric": "none"},
     }
 
     def generate_signals(self, data):
@@ -315,7 +313,7 @@ class Bollinger(Strategies):
         kind, length = indicator
         margin = self.params["margin"]
         factor = self.params["factor"]
-        if (not indicator) or (not margin):
+        if (not indicator) or (margin is None):
             return 
         prices = data["Close"].to_numpy()
         std_windows = data["Close"].rolling(length).std().to_numpy()
@@ -332,3 +330,11 @@ class Bollinger(Strategies):
         self.signals = signals
 
         return self.signals
+    
+
+strategy_classes = {
+    "SimpleMeanReversion": SimpleMeanReversion,
+    "BasicMomentum": BasicMomentum,
+    "BasicRSI": BasicRSI,
+    "Bollinger": Bollinger,
+}
