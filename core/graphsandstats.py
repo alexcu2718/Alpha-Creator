@@ -2,7 +2,6 @@ from math import exp, inf
 import numpy as np
 import streamlit as st
 from typing import Any
-from math import exp
 import altair as alt
 import pandas as pd
 
@@ -108,13 +107,13 @@ def get_stats(equity: np.ndarray) -> dict[str, Any]:
     winrate = win_rate(trades)
     sharpe = sharpe_ratio(equity)
     return {
-        "Profit %": round((equity[-1] - 1) * 100, 2),
-        "Biggest Win %": round(max_change * 100, 2), 
-        "Biggest Loss %": round(min_change * 100, 2), 
-        "Average Trade Size %": round(avg_size * 100, 2), 
-        "Number of Trades": round(number_of_trades, 2), 
-        "Win Rate %": round(winrate * 100, 2), 
-        "Sharpe Ratio": round(sharpe, 2)
+        "Profit %": np.round((equity[-1] - 1) * 100, 2),
+        "Biggest Win %": np.round(max_change * 100, 2), 
+        "Biggest Loss %": np.round(min_change * 100, 2), 
+        "Average Trade Size %": np.round(avg_size * 100, 2), 
+        "Number of Trades": np.round(number_of_trades, 2), 
+        "Win Rate %": np.round(winrate * 100, 2), 
+        "Sharpe Ratio": np.round(sharpe, 2)
         }
 
 def parse_indicator(value) -> tuple[str, int] | str:
@@ -173,8 +172,8 @@ def compare_strategy_inputs(s1: dict, s2 : dict, parameters: dict) -> float:
 
 
 
-def compare_strategy_results(s1, s2, parameters):
-    return round(abs(s1["Profit %"] - s2["Profit %"]) / 100, 3)
+def compare_strategy_results(s1, s2, parameters)->float:
+    return np.round(abs(s1["Profit %"] - s2["Profit %"]) / 100, 3)
 
 
 def get_current_ratio(inputs_metric, results_metric):

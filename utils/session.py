@@ -1,11 +1,10 @@
-from unittest import result
+
 import streamlit as st
 import pandas as pd
 from core.data_loader import get_crypto_data
 from typing import Any, Callable
 from core.strategy_holder import Strategies, strategy_classes
 from core.graphsandstats import compare_strategy_inputs, compare_strategy_results, get_current_ratio
-from utils import results
 from utils.results import preliminary_save
 
 def init_session_state() -> None:

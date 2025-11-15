@@ -15,7 +15,7 @@ fi
 
 if [ ! -d "$VENV_DIR" ]; then
     echo "Creating virtual environment..."
-    uv venv "$VENV_DIR" --python=3.13 #avoid reinstall if not existing
+    uv venv "$VENV_DIR" --python=3.12 #avoid reinstall if not existing
 else
     echo "Virtual environment already exists."
 fi
